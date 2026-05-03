@@ -6,14 +6,15 @@ import {
   type Vector2,
 } from "three";
 
-export function drawPoints(points: Vector2[]) {
+export function drawPoints(points: Vector2[], color: number) {
   const vertices: number[] = [];
   const colors: number[] = [];
 
-  console.log(points);
-
   for (const point of points) {
-    colors.push(1, 0, 0);
+    const r = (color >> 16) & 0xff;
+    const g = (color >> 8) & 0xff;
+    const b = color & 0xff;
+    colors.push(r, g, b);
     vertices.push(point.x, point.y, 0);
   }
 
@@ -33,4 +34,23 @@ export function drawPoints(points: Vector2[]) {
 
   const visualPoints = new Points(geometry, material);
   return visualPoints;
+}
+
+export function updatePoints(
+  visualPoints: ReturnType<typeof drawPoints>,
+  points: Vector2[],
+) {
+  const positionAttr = visualPoints.geometry.getAttribute("position");
+  const array = positionAttr.array;
+
+  const count = points.length;
+
+  for (let i = 0; i < count; i++) {
+    array[i * 3] = points[i].x;
+    array[i * 3 + 1] = points[i].y;
+  }
+
+  positionAttr.needsUpdate = true;
+
+  visualPoints.geometry.setDrawRange(0, count);
 }

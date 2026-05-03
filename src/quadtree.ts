@@ -104,11 +104,13 @@ export class Quadtree {
   }
 
   queryRange(range: Box2): Vector2[] {
-    if (!this.bounding.intersectsBox(range)) {
+    if (
+      !(this.bounding.intersectsBox(range) || this.bounding.containsBox(range))
+    ) {
       return [];
     }
 
-    const points = this.points.filter(this.bounding.containsPoint);
+    const points = this.points.filter((point) => range.containsPoint(point));
 
     if (this.northWest) {
       points.push(...this.northWest.queryRange(range));
@@ -122,8 +124,8 @@ export class Quadtree {
       points.push(...this.southWest.queryRange(range));
     }
 
-    if (this.southWest) {
-      points.push(...this.southWest.queryRange(range));
+    if (this.southEast) {
+      points.push(...this.southEast.queryRange(range));
     }
 
     return points;
