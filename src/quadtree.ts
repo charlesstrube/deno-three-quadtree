@@ -5,7 +5,7 @@ export class Quadtree {
   depth: number;
 
   maxObjects: number;
-  vectors: Vector2[] = [];
+  points: Vector2[] = [];
   subdivived: boolean = false;
 
   northWest?: Quadtree;
@@ -23,13 +23,22 @@ export class Quadtree {
     return this.bounding.containsPoint(point);
   }
 
+  getChildren() {
+    return [
+      this.northEast,
+      this.northWest,
+      this.southEast,
+      this.southWest,
+    ].filter((element) => element != undefined);
+  }
+
   insert(point: Vector2) {
     if (!this.isInside(point)) {
       return;
     }
 
-    if (this.vectors.length < this.maxObjects) {
-      this.vectors.push(point);
+    if (this.points.length < this.maxObjects) {
+      this.points.push(point);
       return;
     }
 
@@ -94,5 +103,29 @@ export class Quadtree {
     this.subdivived = true;
   }
 
-  queryRange() {}
+  queryRange(range: Box2): Vector2[] {
+    if (!this.bounding.intersectsBox(range)) {
+      return [];
+    }
+
+    const points = this.points.filter(this.bounding.containsPoint);
+
+    if (this.northWest) {
+      points.push(...this.northWest.queryRange(range));
+    }
+
+    if (this.northEast) {
+      points.push(...this.northEast.queryRange(range));
+    }
+
+    if (this.southWest) {
+      points.push(...this.southWest.queryRange(range));
+    }
+
+    if (this.southWest) {
+      points.push(...this.southWest.queryRange(range));
+    }
+
+    return points;
+  }
 }
