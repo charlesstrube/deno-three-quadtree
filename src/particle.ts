@@ -8,6 +8,7 @@ export class Particle {
   );
   position: Vector2;
   randomForce = new Vector2();
+  selected = false;
 
   constructor(position: Vector2) {
     this.position = position;

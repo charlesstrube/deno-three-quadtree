@@ -1,7 +1,10 @@
 import { Box2, Vector2 } from "three";
 import { Quadtree } from "./quadtree";
 import { drawScene, prepareScene } from "./scene";
-import { drawQuadtree } from "./drawer/quad-drawer";
+import {
+  initQuadtreeVisualizer,
+  updateQuadtreeVisualizer,
+} from "./drawer/quad-drawer";
 import { drawPoints, updatePoints } from "./drawer/points-drawer";
 import { drawBox2, updateBox2 } from "./drawer/box-drawer";
 import { prepareRaycaster } from "./mouse";
@@ -14,16 +17,19 @@ const raycast = prepareRaycaster(camera);
 
 // bounding box
 const halfBoundingBox = CONFIG.boundingBoxSize / 2;
-const boundingBoxMin = new Vector2(-halfBoundingBox, -halfBoundingBox);
-const boundingBoxMax = new Vector2(halfBoundingBox, halfBoundingBox);
-const boundingBox = new Box2(boundingBoxMin, boundingBoxMax);
+const boundingBox = new Box2(
+  new Vector2(-halfBoundingBox, -halfBoundingBox),
+  new Vector2(halfBoundingBox, halfBoundingBox),
+);
 const visualBoundingBox = drawBox2(boundingBox, 0x0000ff);
 
 // selection box
-const selectionBox = new Box2(
-  new Vector2(0, 0),
-  new Vector2(CONFIG.selectionSize / 2, CONFIG.selectionSize / 2),
+const selectionMin = new Vector2(0, 0);
+const selectionMax = new Vector2(
+  CONFIG.selectionSize / 2,
+  CONFIG.selectionSize / 2,
 );
+const selectionBox = new Box2(selectionMin, selectionMax);
 const visualSelectionBox = drawBox2(selectionBox, 0xff0000);
 scene.add(visualSelectionBox);
 
@@ -41,10 +47,8 @@ for (let i = 0; i < CONFIG.pointCount; i += 1) {
 }
 
 // draw de quadtree
-const visualQuadtreeBoxes = drawQuadtree(quadtree);
-for (const visualBox of visualQuadtreeBoxes) {
-  scene.add(visualBox);
-}
+const visualQuadtreeBoxes = initQuadtreeVisualizer();
+scene.add(visualQuadtreeBoxes);
 
 // draw points
 const selectedVisualPoints = drawPoints(
@@ -63,31 +67,36 @@ drawScene(renderer, () => {
   for (const particle of particles) {
     const position = particle.update();
     quadtree.insert(position, particle);
+    particle.selected = false;
   }
   const position = raycast([visualBoundingBox]);
   if (position) {
     const h = CONFIG.selectionSize / 2;
-    boundingBoxMin.set(position.x - h, position.y - h);
-    boundingBoxMax.set(position.x + h, position.y + h);
-    selectionBox.set(boundingBoxMin, boundingBoxMax);
+    selectionMin.set(position.x - h, position.y - h);
+    selectionMax.set(position.x + h, position.y + h);
+    selectionBox.set(selectionMin, selectionMax);
     updateBox2(visualSelectionBox, selectionBox);
   }
 
-  const selectedParticles = quadtree
-    .queryRange(selectionBox)
-    .map((quadTreeElement) => quadTreeElement.data);
+  const selectedParticles = quadtree.queryRange(selectionBox);
+
+  for (const item of selectedParticles) {
+    item.data.selected = true;
+  }
 
   const unselectedPoints = particles.filter(
-    (particle) => !selectedParticles.includes(particle),
+    (particle) => particle.selected === false,
   );
 
   updatePoints(
     selectedVisualPoints,
-    selectedParticles.map((particle) => particle.position),
+    selectedParticles.map((particle) => particle.data.position),
   );
   updatePoints(
     unselectedVisualPoints,
     unselectedPoints.map((particle) => particle.position),
   );
+
+  updateQuadtreeVisualizer(quadtree);
   renderer.render(scene, camera);
 });
