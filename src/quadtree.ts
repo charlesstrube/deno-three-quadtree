@@ -1,17 +1,22 @@
 import { Box2, Vector2 } from "three";
 
-export class Quadtree {
+interface Element<T> {
+  point: Vector2;
+  data: T;
+}
+
+export class Quadtree<T> {
   bounding: Box2;
   depth: number;
 
   maxObjects: number;
-  points: Vector2[] = [];
+  list: Element<T>[] = [];
   subdivived: boolean = false;
 
-  northWest?: Quadtree;
-  northEast?: Quadtree;
-  southWest?: Quadtree;
-  southEast?: Quadtree;
+  northWest?: Quadtree<T>;
+  northEast?: Quadtree<T>;
+  southWest?: Quadtree<T>;
+  southEast?: Quadtree<T>;
 
   constructor(bounding: Box2, depth: number = 0, maxObjects: number = 4) {
     this.bounding = bounding;
@@ -32,22 +37,23 @@ export class Quadtree {
     ].filter((element) => element != undefined);
   }
 
-  insert(point: Vector2) {
+  insert(point: Vector2, data: T) {
     if (!this.isInside(point)) {
       return;
     }
 
-    if (this.points.length < this.maxObjects) {
-      this.points.push(point);
+    if (this.list.length < this.maxObjects) {
+      const element = { point, data };
+      this.list.push(element);
       return;
     }
 
     this.subdivide();
 
-    this.northWest?.insert(point);
-    this.northEast?.insert(point);
-    this.southWest?.insert(point);
-    this.southEast?.insert(point);
+    this.northWest?.insert(point, data);
+    this.northEast?.insert(point, data);
+    this.southWest?.insert(point, data);
+    this.southEast?.insert(point, data);
   }
 
   subdivide() {
@@ -103,14 +109,16 @@ export class Quadtree {
     this.subdivived = true;
   }
 
-  queryRange(range: Box2): Vector2[] {
+  queryRange(range: Box2): Element<T>[] {
     if (
       !(this.bounding.intersectsBox(range) || this.bounding.containsBox(range))
     ) {
       return [];
     }
 
-    const points = this.points.filter((point) => range.containsPoint(point));
+    const points = this.list.filter((element) =>
+      range.containsPoint(element.point),
+    );
 
     if (this.northWest) {
       points.push(...this.northWest.queryRange(range));

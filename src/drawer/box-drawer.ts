@@ -36,6 +36,7 @@ export function updateBox2(visualBox: ReturnType<typeof drawBox2>, box: Box2) {
   const center = new Vector2();
   box.getCenter(center);
   visualBox.position.set(center.x, center.y, 0);
+  visualBox.scale.set(size.x * 2, size.y * 2, 0);
 
   return visualBox;
 }

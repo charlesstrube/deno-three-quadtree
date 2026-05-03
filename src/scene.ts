@@ -1,15 +1,10 @@
 import Stats from "stats.js";
 import { WebGLRenderer } from "three";
 import { OrbitControls } from "three/examples/jsm/Addons.js";
-import {
-  AxesHelper,
-  PerspectiveCamera,
-  Scene,
-} from "three/src/Three.WebGPU.Nodes.js";
+import { PerspectiveCamera, Scene } from "three/src/Three.WebGPU.Nodes.js";
 
 export function prepareScene() {
   const scene = new Scene();
-  scene.add(new AxesHelper(1));
 
   const camera = new PerspectiveCamera(
     75,
