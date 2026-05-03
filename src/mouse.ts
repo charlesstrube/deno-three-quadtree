@@ -10,6 +10,8 @@ export function prepareRaycaster(camera: PerspectiveCamera) {
     mouse.y = -(event.clientY / window.innerHeight) * 2 + 1;
   });
 
+  const mousePosition = new Vector2();
+
   return (bounding: Object3D[]) => {
     raycaster.setFromCamera(mouse, camera);
     const intersects = raycaster.intersectObjects(bounding);
@@ -18,7 +20,10 @@ export function prepareRaycaster(camera: PerspectiveCamera) {
       // 'intersects[0]' est l'objet le plus proche de la caméra
       const pointImpact = intersects[0].point; // C'est un Vector3 (x, y, z)
 
-      return new Vector2(pointImpact.x, pointImpact.y);
+      mousePosition.setX(pointImpact.x);
+      mousePosition.setY(pointImpact.y);
+
+      return mousePosition;
 
       // Optionnel : on peut aussi récupérer l'objet lui-même
       // const objetSurvole = intersects[0].object;

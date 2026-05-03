@@ -24,6 +24,15 @@ export class Quadtree<T> {
     this.maxObjects = maxObjects;
   }
 
+  clear() {
+    this.list = [];
+    this.subdivived = false;
+    this.northWest = undefined;
+    this.northEast = undefined;
+    this.southWest = undefined;
+    this.southEast = undefined;
+  }
+
   isInside(point: Vector2) {
     return this.bounding.containsPoint(point);
   }

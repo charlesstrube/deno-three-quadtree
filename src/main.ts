@@ -7,12 +7,7 @@ import { drawBox2, updateBox2 } from "./drawer/box-drawer";
 import { prepareRaycaster } from "./mouse";
 import { Particle } from "./particle";
 import "./style.css";
-
-const CONFIG = {
-  boundingBoxSize: 3,
-  selectionSize: 1,
-  pointCount: 2000,
-};
+import { CONFIG } from "./config";
 
 const { camera, renderer, scene } = prepareScene();
 const raycast = prepareRaycaster(camera);
@@ -64,6 +59,11 @@ const unselectedVisualPoints = drawPoints(
 scene.add(unselectedVisualPoints);
 
 drawScene(renderer, () => {
+  quadtree.clear();
+  for (const particle of particles) {
+    const position = particle.update();
+    quadtree.insert(position, particle);
+  }
   const position = raycast([visualBoundingBox]);
   if (position) {
     const h = CONFIG.selectionSize / 2;

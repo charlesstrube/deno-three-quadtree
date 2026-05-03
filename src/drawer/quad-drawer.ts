@@ -1,7 +1,7 @@
 import type { Quadtree } from "../quadtree";
 import { drawBox2 } from "./box-drawer";
 
-export function drawQuadtree(quadTree: Quadtree) {
+export function drawQuadtree<T>(quadTree: Quadtree<T>) {
   const color = 0x00ff00;
   const parentVisualBox = drawBox2(
     quadTree.bounding,
